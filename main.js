@@ -1,6 +1,6 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const Store = require('electron-store');
-const fs = require('fs');
+const cmd = require('child_process');
 
 let appWindow;
 const store = new Store();
@@ -9,13 +9,11 @@ if (!store.get('clicks')) {
   store.set('clicks', 0);
 }
 
-/**
- * Function to create window
- */
 createWindow = () => {
+
   appWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1200,
+    height: 1000,
     title: 'Angular Electron Starter',
     webPreferences: {
       contextIsolation: false,
@@ -41,5 +39,17 @@ app.on('window-all-closed', () => {
 });
 
 ipcMain.on('message', (event) => {
-  event.reply('reply', 'Hello from main process');
+  event.reply('reply', 'Hello world from main process');
 });
+
+ipcMain.on('execute-command', (event, command) => {
+  console.log(command);
+  cmd.exec(`start cmd ${command[0].option} ${command[0].command}`,
+    (error) => {
+    if (error) {
+      event.reply('resp-execute-command', false);
+      return;
+    }
+    event.reply('resp-execute-command', true);
+  });
+})
